@@ -1,30 +1,39 @@
-const wrapper = document.querySelector(".country-wrapper");
-const btn = document.querySelector(".btn");
+const wrapper = document.querySelector(".wrapper");
 
-btn.addEventListener("click", function () {
-  const input = document.querySelector(".input-country");
-  const inputValue = input.value;
+class App {
+  constructor() {
+    this._fetchData();
+  }
 
-  const request = new XMLHttpRequest();
-  request.open("GET", `https://restcountries.com/v2/name/${inputValue}`);
-  request.send();
+  _fetchData() {
+    fetch("https://fakestoreapi.com/products")
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`Products not found! (${response.status})`);
+        return response.json();
+      })
+      .then((data) => this._renderData(data))
+      .catch((error) => this._renderError(error.message));
+  }
 
-  request.addEventListener("load", function () {
-    const [data] = JSON.parse(this.responseText);
-    renderData(data);
-  });
-});
+  _renderData(products) {
+    products.forEach((product) => {
+      const html = `
+        <p>${product.id}</p>
+        <h2>${product.title}</h2>
+        <p>${product.price.toLocaleString("bn-BD", {
+          style: "currency",
+          currency: "BDT",
+        })}</p>
+      `;
 
-function renderData(country) {
-  console.log(country);
-  const html = `
-  <div class="country">
-    <h1>${country.name}</h1>
-    <p>Population: ${(country.population / 10000000).toFixed(2)} M people</p>
-    <p>Capital: ${country.capital}</p>
-    <p>Language: ${country.languages[0].name}</p>
-  </div>
-  `;
+      wrapper.insertAdjacentHTML("afterbegin", html);
+    });
+  }
 
-  wrapper.insertAdjacentHTML("afterbegin", html);
+  _renderError(error) {
+    wrapper.insertAdjacentText("afterbegin", error);
+  }
 }
+
+const myApp = new App();
